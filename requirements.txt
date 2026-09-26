@@ -1,0 +1,13 @@
+faiss-cpu==1.15.1
+fastapi==0.141.1
+httpx==0.28.1
+langchain==1.4.2
+langchain-community==0.4.2
+langchain-google-genai==4.4.0
+langchain-text-splitters==1.1.2
+langgraph==1.2.12
+pytest==9.1.1
+python-dotenv==1.2.3
+requests==2.34.2
+streamlit==1.64.0
+uvicorn==0.54.0

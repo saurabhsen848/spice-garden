@@ -1,0 +1,35 @@
+[
+  {"id": "S1", "name": "Paneer Tikka", "category": "Starters", "price": 280, "veg": true, "spice": 2, "allergens": ["dairy"], "description": "Cottage cheese cubes marinated in yogurt and spices, grilled in the tandoor."},
+  {"id": "S2", "name": "Hara Bhara Kebab", "category": "Starters", "price": 220, "veg": true, "spice": 1, "allergens": [], "description": "Pan-fried patties of spinach, green peas and potato. Vegan."},
+  {"id": "S3", "name": "Veg Spring Rolls", "category": "Starters", "price": 200, "veg": true, "spice": 1, "allergens": ["gluten", "soy"], "description": "Crispy rolls stuffed with stir-fried vegetables, served with sweet chilli sauce."},
+  {"id": "S4", "name": "Chicken 65", "category": "Starters", "price": 320, "veg": false, "spice": 3, "allergens": [], "description": "Spicy deep-fried chicken bites tempered with curry leaves and red chillies."},
+  {"id": "S5", "name": "Tandoori Chicken (Half)", "category": "Starters", "price": 360, "veg": false, "spice": 2, "allergens": ["dairy"], "description": "Chicken marinated overnight in yogurt and tandoori masala, roasted in a clay oven."},
+  {"id": "S6", "name": "Amritsari Fish Fry", "category": "Starters", "price": 380, "veg": false, "spice": 2, "allergens": ["fish", "gluten"], "description": "Gram-flour battered fish fillets with carom seeds and chaat masala."},
+  {"id": "S7", "name": "Cashew Mushroom Tikka", "category": "Starters", "price": 290, "veg": true, "spice": 2, "allergens": ["nuts", "dairy"], "description": "Button mushrooms in a creamy cashew marinade, char-grilled."},
+
+  {"id": "M1", "name": "Paneer Butter Masala", "category": "Mains", "price": 320, "veg": true, "spice": 1, "allergens": ["dairy", "nuts"], "description": "Cottage cheese in a rich, mildly sweet tomato-butter gravy with cashew paste."},
+  {"id": "M2", "name": "Dal Makhani", "category": "Mains", "price": 260, "veg": true, "spice": 1, "allergens": ["dairy"], "description": "Black lentils slow-cooked overnight with butter and cream."},
+  {"id": "M3", "name": "Chana Masala", "category": "Mains", "price": 240, "veg": true, "spice": 2, "allergens": [], "description": "Chickpeas in a tangy onion-tomato gravy. Vegan."},
+  {"id": "M4", "name": "Veg Kolhapuri", "category": "Mains", "price": 270, "veg": true, "spice": 3, "allergens": ["dairy"], "description": "Mixed vegetables in a fiery Kolhapuri masala with roasted coconut."},
+  {"id": "M5", "name": "Butter Chicken", "category": "Mains", "price": 380, "veg": false, "spice": 1, "allergens": ["dairy", "nuts"], "description": "Tandoori chicken simmered in a creamy tomato-butter gravy. Our bestseller."},
+  {"id": "M6", "name": "Chicken Chettinad", "category": "Mains", "price": 360, "veg": false, "spice": 3, "allergens": [], "description": "South Indian chicken curry with black pepper, fennel and freshly ground spices."},
+  {"id": "M7", "name": "Mutton Rogan Josh", "category": "Mains", "price": 450, "veg": false, "spice": 2, "allergens": ["dairy"], "description": "Kashmiri-style slow-cooked lamb curry with aromatic spices."},
+  {"id": "M8", "name": "Goan Fish Curry", "category": "Mains", "price": 420, "veg": false, "spice": 2, "allergens": ["fish"], "description": "Kingfish in a tangy coconut and kokum curry."},
+  {"id": "M9", "name": "Veg Dum Biryani", "category": "Mains", "price": 280, "veg": true, "spice": 2, "allergens": ["dairy"], "description": "Basmati rice layered with vegetables and saffron, slow-cooked in a sealed pot. Served with raita."},
+  {"id": "M10", "name": "Chicken Dum Biryani", "category": "Mains", "price": 350, "veg": false, "spice": 2, "allergens": ["dairy"], "description": "Hyderabadi-style biryani with marinated chicken and fragrant basmati rice. Served with raita."},
+
+  {"id": "B1", "name": "Butter Naan", "category": "Breads", "price": 60, "veg": true, "spice": 0, "allergens": ["gluten", "dairy"], "description": "Soft leavened flatbread from the tandoor, brushed with butter."},
+  {"id": "B2", "name": "Garlic Naan", "category": "Breads", "price": 70, "veg": true, "spice": 0, "allergens": ["gluten", "dairy"], "description": "Naan topped with chopped garlic and coriander."},
+  {"id": "B3", "name": "Tandoori Roti", "category": "Breads", "price": 40, "veg": true, "spice": 0, "allergens": ["gluten"], "description": "Whole-wheat flatbread baked in the tandoor. Vegan."},
+  {"id": "B4", "name": "Jeera Rice", "category": "Breads", "price": 150, "veg": true, "spice": 0, "allergens": [], "description": "Basmati rice tempered with cumin seeds. Vegan."},
+
+  {"id": "D1", "name": "Gulab Jamun", "category": "Desserts", "price": 120, "veg": true, "spice": 0, "allergens": ["dairy", "gluten"], "description": "Two warm milk-solid dumplings soaked in rose-cardamom syrup."},
+  {"id": "D2", "name": "Rasmalai", "category": "Desserts", "price": 150, "veg": true, "spice": 0, "allergens": ["dairy", "nuts"], "description": "Soft cottage cheese discs in saffron milk, garnished with pistachios."},
+  {"id": "D3", "name": "Mango Sorbet", "category": "Desserts", "price": 140, "veg": true, "spice": 0, "allergens": [], "description": "Refreshing Alphonso mango sorbet. Vegan and dairy-free."},
+  {"id": "D4", "name": "Gajar Halwa", "category": "Desserts", "price": 140, "veg": true, "spice": 0, "allergens": ["dairy", "nuts"], "description": "Slow-cooked carrot pudding with ghee, milk and almonds. Seasonal (winter)."},
+
+  {"id": "V1", "name": "Masala Chaas", "category": "Beverages", "price": 80, "veg": true, "spice": 1, "allergens": ["dairy"], "description": "Spiced buttermilk with roasted cumin and mint."},
+  {"id": "V2", "name": "Mango Lassi", "category": "Beverages", "price": 130, "veg": true, "spice": 0, "allergens": ["dairy"], "description": "Thick yogurt smoothie blended with mango pulp."},
+  {"id": "V3", "name": "Fresh Lime Soda", "category": "Beverages", "price": 90, "veg": true, "spice": 0, "allergens": [], "description": "Sweet or salted lime soda. Vegan."},
+  {"id": "V4", "name": "Masala Chai", "category": "Beverages", "price": 60, "veg": true, "spice": 0, "allergens": ["dairy"], "description": "Indian tea brewed with ginger, cardamom and milk."}
+]
