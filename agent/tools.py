@@ -1,30 +1,87 @@
 """Tools the agent can call. Docstrings are sent to the LLM, so they explain *when* to use each tool."""
 
+import json
+from datetime import date, time
 from typing import Literal, Optional
 
 import requests
 from langchain_core.tools import tool
+from pydantic import ValidationError
 
 from agent import config
 from agent.rag import dish_to_text, load_menu, retrieve
+from mock_api import services
 
 Category = Literal["Starters", "Mains", "Breads", "Desserts", "Beverages"]
 API_DOWN = ("The restaurant's order/reservation system is currently unreachable. "
             "Apologise and ask the customer to call +91 80 4567 8900.")
 
 
-def _call_api(method: str, path: str, **kwargs) -> dict | str:
-    """Call the mock API. Returns JSON on success, or a readable error string for the LLM."""
+def _format_api_error(status_code: int, detail) -> str:
+    if isinstance(detail, list):
+        detail = "; ".join(
+            f"{'.'.join(map(str, error.get('loc', [])[1:]))}: {error.get('msg', 'Invalid value')}"
+            for error in detail
+        )
+    return f"Request failed ({status_code}): {detail}"
+
+
+def _in_process_call(method: str, path: str, *, params=None, json_body=None) -> dict | str:
+    """Fallback to bundled mock data while sharing FastAPI's service rules."""
     try:
-        resp = requests.request(method, f"{config.API_BASE_URL}{path}", timeout=10, **kwargs)
-    except requests.RequestException:
+        if method == "GET" and path.startswith("/orders/"):
+            return services.get_order(path.rsplit("/", 1)[-1], services.ORDERS_FILE)
+        if method == "GET" and path == "/reservations/availability":
+            params = params or {}
+            try:
+                day = date.fromisoformat(str(params["date"]))
+                slot = time.fromisoformat(str(params["time"]))
+                party_size = int(params["party_size"])
+            except (KeyError, TypeError, ValueError):
+                return _format_api_error(422, "Invalid date, time, or party_size.")
+            return services.check_availability(day, slot, party_size, services.RESERVATIONS_FILE)
+        if method == "POST" and path == "/reservations":
+            try:
+                request = services.ReservationRequest.model_validate(json_body or {})
+            except ValidationError as exc:
+                return _format_api_error(422, exc.errors(include_url=False))
+            return services.create_reservation(request, services.RESERVATIONS_FILE)
+        if method == "GET" and path.startswith("/reservations/"):
+            return services.get_reservation(path.rsplit("/", 1)[-1], services.RESERVATIONS_FILE)
+        return _format_api_error(404, "Not found")
+    except services.ServiceError as exc:
+        return _format_api_error(exc.status_code, exc.detail)
+    except (OSError, json.JSONDecodeError, TypeError, KeyError):
         return API_DOWN
+
+
+def _call_api(method: str, path: str, **kwargs) -> dict | str:
+    """Prefer the configured API; use the shared in-process service if it is unavailable."""
+    try:
+        resp = requests.request(method, f"{config.API_BASE_URL}{path}", timeout=4, **kwargs)
+    except requests.RequestException:
+        return _in_process_call(method, path, params=kwargs.get("params"), json_body=kwargs.get("json"))
     if resp.ok:
-        return resp.json()
-    detail = resp.json().get("detail", resp.text)
-    if isinstance(detail, list):  # FastAPI validation errors
-        detail = "; ".join(f"{'.'.join(map(str, e['loc'][1:]))}: {e['msg']}" for e in detail)
-    return f"Request failed ({resp.status_code}): {detail}"
+        try:
+            return resp.json()
+        except requests.RequestException:
+            return API_DOWN
+    try:
+        detail = resp.json().get("detail", resp.text)
+    except requests.RequestException:
+        detail = resp.text or "The configured backend returned an unreadable response."
+    return _format_api_error(resp.status_code, detail)
+
+
+def backend_mode() -> str:
+    """Return connected, cloud, or offline for the sidebar service indicator."""
+    try:
+        response = requests.get(config.API_BASE_URL, timeout=2)
+        if response.ok:
+            return "connected"
+    except requests.RequestException:
+        pass
+    return "cloud" if services.backend_available() else "offline"
 
 
 # ---------------- RAG tools ----------------

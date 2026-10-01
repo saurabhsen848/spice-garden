@@ -56,7 +56,8 @@ def _info_documents() -> list[Document]:
 
 
 def _embeddings() -> GoogleGenerativeAIEmbeddings:
-    return GoogleGenerativeAIEmbeddings(model=config.EMBED_MODEL, google_api_key=config.GOOGLE_API_KEY)
+    return GoogleGenerativeAIEmbeddings(model=config.EMBED_MODEL,
+                                       google_api_key=config.require_google_api_key())
 
 
 def build_index() -> int:

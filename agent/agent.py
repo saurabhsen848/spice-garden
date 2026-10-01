@@ -20,7 +20,7 @@ RATE_LIMIT_RETRY = ModelRetryMiddleware(max_retries=3, retry_on=(GoogleRateLimit
 
 
 def build_agent():
-    llm = ChatGoogleGenerativeAI(model=config.CHAT_MODEL, google_api_key=config.GOOGLE_API_KEY,
+    llm = ChatGoogleGenerativeAI(model=config.CHAT_MODEL, google_api_key=config.require_google_api_key(),
                                  temperature=0.3, max_retries=3)
     # The system prompt is rebuilt per agent so "today's date" is always current.
     return create_agent(llm, tools=ALL_TOOLS, system_prompt=build_system_prompt(), middleware=[RATE_LIMIT_RETRY])

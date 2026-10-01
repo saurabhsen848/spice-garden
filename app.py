@@ -6,11 +6,11 @@ Run: streamlit run app.py (start the mock API first: uvicorn mock_api.server:app
 import html
 import json
 
-import requests
 import streamlit as st
 
 from agent import config
 from agent.agent import build_agent, chat
+from agent.tools import backend_mode
 
 st.set_page_config(
     page_title="Spice Garden | AI Restaurant Assistant",
@@ -111,6 +111,9 @@ def apply_styles() -> None:
         [data-testid="stExpander"] { background:#faf4ec;border:1px solid #eadbc9;border-radius:14px;overflow:hidden; }
         .sg-section-label { color:#a9927e;font-size:.7rem;font-weight:700;letter-spacing:.13em;text-transform:uppercase;margin:.95rem 0 .3rem; }
         .sg-menu-intro { display:flex;align-items:flex-end;justify-content:space-between;gap:1rem;margin:.35rem 0 1rem; }
+        .sg-menu-hero { padding:.8rem .2rem .4rem;margin-bottom:.55rem; }
+        .sg-menu-hero h1 { font:700 clamp(2rem,4vw,3.25rem)/1.15 'Playfair Display',serif;color:#30231c;margin:.45rem 0 .6rem; }
+        .sg-menu-hero p { color:#75665b;font-size:1rem;line-height:1.65;max-width:800px;margin:0 0 1rem; }
         .sg-menu-title { font:700 clamp(1.45rem,2.5vw,2rem)/1.2 'Playfair Display',serif;color:#30231c; }
         .sg-menu-count { color:#857568;font-size:.85rem; }
         .sg-menu-grid { display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1rem;width:100%; }
@@ -145,15 +148,16 @@ def load_menu_data() -> list[dict]:
 
 
 def render_menu_cards(tool_calls: list[dict], widget_key: str) -> None:
-    """Present source menu data after the agent actually calls browse_menu."""
+    """Render menu cards using the shared menu data source."""
     menu = load_menu_data()
     browse_call = next((call for call in reversed(tool_calls) if call.get("name") == "browse_menu"), {})
     requested_category = (browse_call.get("args") or {}).get("category")
     default_category = requested_category if requested_category in MENU_CATEGORIES else "All"
 
+    categories = ["All", *dict.fromkeys(str(dish.get("category", "")) for dish in menu if dish.get("category"))]
     selected_category = st.pills(
         "Menu category",
-        ["All", *MENU_CATEGORIES],
+        categories,
         default=default_category,
         key=f"menu_category_{widget_key}",
         label_visibility="collapsed",
@@ -161,7 +165,7 @@ def render_menu_cards(tool_calls: list[dict], widget_key: str) -> None:
     ) or default_category
     visible_dishes = [
         dish for dish in menu
-        if selected_category == "All" or dish["category"] == selected_category
+        if selected_category == "All" or dish.get("category") == selected_category
     ]
 
     st.markdown(
@@ -171,19 +175,20 @@ def render_menu_cards(tool_calls: list[dict], widget_key: str) -> None:
     )
     cards = []
     for dish in visible_dishes:
-        name = html.escape(str(dish["name"]))
-        price = f"₹{int(dish['price']):,}"
-        description = html.escape(str(dish["description"]))
+        name = html.escape(str(dish.get("name", "")))
+        price = f"₹{int(dish['price']):,}" if dish.get("price") is not None else ""
+        description = html.escape(str(dish.get("description", "")))
         allergens = dish.get("allergens") or []
         allergen_text = ", ".join(html.escape(str(item).title()) for item in allergens) or "None listed"
-        diet_label = "Vegetarian" if dish["veg"] else "Non-Veg"
-        diet_class = "veg" if dish["veg"] else "nonveg"
-        category = html.escape(str(dish["category"]))
+        diet_label = "Vegetarian" if dish.get("veg") else "Non-Vegetarian"
+        diet_class = "veg" if dish.get("veg") else "nonveg"
+        category = html.escape(str(dish.get("category", "")))
+        spice_label = f"Spice {dish['spice']}/3" if dish.get("spice") is not None else ""
         cards.append(
             "<div class='sg-menu-card'>"
             f"<div class='sg-menu-card-top'><div class='sg-menu-name'>{name}</div><div class='sg-menu-price'>{price}</div></div>"
             f"<div class='sg-menu-tags'><span class='sg-menu-tag category'>{category}</span><span class='sg-menu-tag {diet_class}'>{diet_label}</span>"
-            f"<span class='sg-menu-tag'>Spice {int(dish['spice'])}/3</span></div>"
+            f"<span class='sg-menu-tag'>{spice_label}</span></div>"
             f"<div class='sg-menu-description'>{description}</div>"
             f"<div class='sg-menu-allergens'>Allergens: {allergen_text}</div>"
             "</div>"
@@ -191,11 +196,85 @@ def render_menu_cards(tool_calls: list[dict], widget_key: str) -> None:
     st.markdown(f"<div class='sg-menu-grid'>{''.join(cards)}</div>", unsafe_allow_html=True)
 
 
-def api_is_up() -> bool:
-    try:
-        return requests.get(config.API_BASE_URL, timeout=2).ok
-    except requests.RequestException:
-        return False
+def render_full_menu() -> None:
+    """Render a filterable full-menu page from data/menu.json."""
+    menu = load_menu_data()
+    st.markdown(
+        "<div class='sg-menu-hero'><div class='sg-eyebrow'>OUR MENU</div>"
+        "<h1>Explore the flavors of Spice Garden</h1>"
+        "<p>Discover our carefully prepared Indian dishes, from classic starters to rich mains, breads, desserts and refreshing beverages.</p></div>",
+        unsafe_allow_html=True,
+    )
+    if st.button("← Back to Home", key="menu_back_home"):
+        st.session_state.view = "home"
+        st.rerun()
+
+    available_categories = list(dict.fromkeys(
+        str(dish.get("category")) for dish in menu if dish.get("category")
+    ))
+    category_order = [name for name in MENU_CATEGORIES if name in available_categories]
+    category_order.extend(name for name in available_categories if name not in category_order)
+    category = st.pills(
+        "Category", ["All", *category_order], default="All", key="full_menu_category",
+        label_visibility="collapsed", width="stretch",
+    ) or "All"
+
+    filter_cols = st.columns([2, 1, 1, 1])
+    with filter_cols[0]:
+        query = st.text_input("Search dishes", placeholder="Search by dish or ingredient", key="full_menu_search")
+    with filter_cols[1]:
+        vegetarian_only = st.checkbox("Vegetarian", key="full_menu_vegetarian")
+    spice_levels = sorted({dish.get("spice") for dish in menu if isinstance(dish.get("spice"), int)})
+    with filter_cols[2]:
+        selected_spice = st.selectbox("Spice level", ["Any", *spice_levels], key="full_menu_spice")
+    with filter_cols[3]:
+        sort_order = st.selectbox("Sort by", ["Default", "Price: Low to High", "Price: High to Low", "Name: A-Z"], key="full_menu_sort")
+
+    search_text = query.casefold().strip()
+    visible = [dish for dish in menu if
+        (category == "All" or dish.get("category") == category)
+        and (not search_text or search_text in str(dish.get("name", "")).casefold()
+             or search_text in str(dish.get("description", "")).casefold())
+        and (not vegetarian_only or dish.get("veg") is True)
+        and (selected_spice == "Any" or dish.get("spice") == selected_spice)
+    ]
+    if sort_order == "Price: Low to High":
+        visible.sort(key=lambda dish: dish.get("price", float("inf")))
+    elif sort_order == "Price: High to Low":
+        visible.sort(key=lambda dish: dish.get("price", float("-inf")), reverse=True)
+    elif sort_order == "Name: A-Z":
+        visible.sort(key=lambda dish: str(dish.get("name", "")).casefold())
+
+    st.markdown(f"<div class='sg-menu-count' style='margin:.45rem 0 1rem'>Showing {len(visible)} dishes</div>", unsafe_allow_html=True)
+    if not visible:
+        st.info("No dishes match those filters. Try a different search or category.")
+        return
+
+    cards = []
+    for dish in visible:
+        name = html.escape(str(dish.get("name", "")))
+        description = html.escape(str(dish.get("description", "")))
+        category_label = html.escape(str(dish.get("category", "")))
+        price = f"₹{int(dish['price']):,}" if dish.get("price") is not None else ""
+        veg = dish.get("veg")
+        diet = "Vegetarian" if veg is True else "Non-Vegetarian" if veg is False else ""
+        diet_class = "veg" if veg is True else "nonveg"
+        spice = f"Spice {dish['spice']}/3" if dish.get("spice") is not None else ""
+        tags = "".join(
+            f"<span class='sg-menu-tag {css_class}'>{html.escape(label)}</span>"
+            for label, css_class in ((category_label, "category"), (diet, diet_class), (spice, "")) if label
+        )
+        allergen_items = dish.get("allergens")
+        allergen_html = ""
+        if isinstance(allergen_items, list):
+            allergen_text = ", ".join(html.escape(str(item).title()) for item in allergen_items) or "None listed"
+            allergen_html = f"<div class='sg-menu-allergens'>Allergens: {allergen_text}</div>"
+        cards.append(
+            "<div class='sg-menu-card'><div class='sg-menu-card-top'>"
+            f"<div class='sg-menu-name'>{name}</div><div class='sg-menu-price'>{price}</div></div>"
+            f"<div class='sg-menu-tags'>{tags}</div><div class='sg-menu-description'>{description}</div>{allergen_html}</div>"
+        )
+    st.markdown(f"<div class='sg-menu-grid'>{''.join(cards)}</div>", unsafe_allow_html=True)
 
 
 def render_tool_steps(tools: list[dict]) -> None:
@@ -219,8 +298,10 @@ if "messages" not in st.session_state:
     st.session_state.messages = []  # display messages: {role, content, tools}
     st.session_state.history = []   # LangChain messages: the agent's conversation memory
     st.session_state.pending = None
+if "view" not in st.session_state:
+    st.session_state.view = "home"
 
-api_online = api_is_up()
+order_backend_mode = backend_mode()
 
 # ---------------- sidebar ----------------
 with st.sidebar:
@@ -239,13 +320,26 @@ with st.sidebar:
     st.markdown("<div class='sg-section-label'>Quick actions</div>", unsafe_allow_html=True)
     for label, prompt in SUGGESTIONS.items():
         if st.button(label, key=f"sidebar_{label}", width="stretch"):
-            queue_prompt(prompt)
+            if label == ":material/menu_book: View Menu":
+                st.session_state.view = "menu"
+            else:
+                st.session_state.view = "home"
+                queue_prompt(prompt)
+            st.rerun()
 
     st.markdown("<div class='sg-section-label'>System status</div>", unsafe_allow_html=True)
-    if api_online:
-        st.markdown("<div style='border:1px solid #45674f;background:#344d3b;border-radius:12px;padding:.65rem .75rem;color:#dff1df;font-size:.82rem'><span style='color:#80cf8f'>&#9679;</span> &nbsp;Order &amp; Booking API Online</div>", unsafe_allow_html=True)
+    if order_backend_mode == "connected":
+        status_text, status_colors = "Order &amp; Booking API: Connected", ("#45674f", "#344d3b", "#dff1df", "#80cf8f")
+    elif order_backend_mode == "cloud":
+        status_text, status_colors = "Order &amp; Booking: Cloud Mode", ("#66543c", "#493b2c", "#f4ead9", "#e4b768")
     else:
-        st.markdown("<div style='border:1px solid #795047;background:#56352f;border-radius:12px;padding:.65rem .75rem;color:#f4dfd9;font-size:.82rem'><span style='color:#ef987c'>&#9679;</span> &nbsp;Order &amp; Booking API Offline</div>", unsafe_allow_html=True)
+        status_text, status_colors = "Order &amp; Booking API: Offline", ("#795047", "#56352f", "#f4dfd9", "#ef987c")
+    border, background, foreground, dot = status_colors
+    st.markdown(
+        f"<div style='border:1px solid {border};background:{background};border-radius:12px;padding:.65rem .75rem;color:{foreground};font-size:.82rem'>"
+        f"<span style='color:{dot}'>&#9679;</span> &nbsp;{status_text}</div>",
+        unsafe_allow_html=True,
+    )
     st.caption("Gemini assistant · " + config.CHAT_MODEL)
 
     if st.button(":material/delete_sweep:  Clear conversation", key="clear_chat", width="stretch"):
@@ -260,7 +354,9 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-if not st.session_state.messages:
+if st.session_state.view == "menu":
+    render_full_menu()
+elif not st.session_state.messages:
     st.markdown(
         "<div class='sg-hero'><div class='sg-eyebrow'>A little taste of India</div>"
         "<div class='sg-hero-title'>Namaste<br>Welcome to Spice Garden</div>"
@@ -273,8 +369,13 @@ if not st.session_state.messages:
         with col:
             with st.container(key=f"hero_card_{index}"):
                 st.markdown(f"<div class='sg-card-content'><div class='sg-card-icon'>{icon}</div><div class='sg-card-title'>{title}</div><div class='sg-card-copy'>{description}</div></div>", unsafe_allow_html=True)
-                if st.button("Get started  →", key=f"hero_{suggestion_key}", width="stretch"):
-                    queue_prompt(SUGGESTIONS[suggestion_key])
+                button_label = "Explore Menu  →" if title == "Explore the menu" else "Get started  →"
+                if st.button(button_label, key=f"hero_{suggestion_key}", width="stretch"):
+                    if title == "Explore the menu":
+                        st.session_state.view = "menu"
+                    else:
+                        queue_prompt(SUGGESTIONS[suggestion_key])
+                    st.rerun()
 else:
     st.markdown("<div class='sg-eyebrow' style='margin-bottom:1rem'>Your conversation</div>", unsafe_allow_html=True)
     with st.container(height=560, border=False):
@@ -299,6 +400,7 @@ prompt = typed or st.session_state.pending
 st.session_state.pending = None
 
 if prompt:
+    st.session_state.view = "home"
     st.session_state.messages.append({"role": "user", "content": prompt, "tools": []})
     with st.chat_message("user"):
         st.markdown(prompt)
