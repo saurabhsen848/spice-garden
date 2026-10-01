@@ -1,0 +1,10 @@
+{
+  "ORD1001": {"customer": "Rahul Sharma", "type": "delivery", "items": ["Butter Chicken", "Garlic Naan x2", "Mango Lassi"], "total": 650, "status": "Delivered", "placed_at": "12:15 PM", "eta": null, "note": "Delivered at 1:02 PM."},
+  "ORD1002": {"customer": "Priya Nair", "type": "delivery", "items": ["Paneer Butter Masala", "Butter Naan x3", "Gulab Jamun"], "total": 620, "status": "Out for delivery", "placed_at": "7:40 PM", "eta": "10 minutes", "note": "Rider Arjun is on the way."},
+  "ORD1003": {"customer": "Aman Verma", "type": "delivery", "items": ["Chicken Dum Biryani", "Chicken 65", "Fresh Lime Soda"], "total": 760, "status": "Preparing", "placed_at": "8:05 PM", "eta": "30 minutes", "note": "The kitchen is preparing your order."},
+  "ORD1004": {"customer": "Sneha Iyer", "type": "takeaway", "items": ["Veg Dum Biryani", "Dal Makhani", "Tandoori Roti x4"], "total": 700, "status": "Ready for pickup", "placed_at": "7:30 PM", "eta": null, "note": "Please collect from the takeaway counter."},
+  "ORD1005": {"customer": "Karan Mehta", "type": "delivery", "items": ["Mutton Rogan Josh", "Jeera Rice", "Rasmalai"], "total": 750, "status": "Order received", "placed_at": "8:20 PM", "eta": "45 minutes", "note": "Your order has been confirmed and will be prepared shortly."},
+  "ORD1006": {"customer": "Fatima Khan", "type": "delivery", "items": ["Goan Fish Curry", "Jeera Rice"], "total": 610, "status": "Cancelled", "placed_at": "1:10 PM", "eta": null, "note": "Cancelled by customer. Refund of ₹610 initiated to the original payment method (3-5 working days)."},
+  "ORD1007": {"customer": "Vikram Rao", "type": "delivery", "items": ["Paneer Tikka", "Chana Masala", "Butter Naan x2", "Masala Chaas x2"], "total": 880, "status": "Delayed", "placed_at": "7:50 PM", "eta": "20 minutes", "note": "Delayed due to heavy rain. We apologise for the inconvenience."},
+  "ORD1008": {"customer": "Ananya Das", "type": "takeaway", "items": ["Hara Bhara Kebab", "Veg Kolhapuri", "Garlic Naan x2"], "total": 630, "status": "Preparing", "placed_at": "8:10 PM", "eta": "15 minutes", "note": "Will be ready for pickup shortly."}
+}
