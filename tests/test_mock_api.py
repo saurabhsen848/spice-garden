@@ -55,8 +55,7 @@ def test_create_and_fetch_reservation():
 
 @pytest.mark.parametrize("overrides", [
     {"time": "03:00"},                                                  # restaurant closed
-    {"time": "16:00"},                                                  # weekday afternoon break
-    {"time": "22:30"},                                                  # after last weekday slot
+    {"time": "00:00", "date": (next_weekday(2) + timedelta(days=1)).isoformat()},  # weekday close at midnight
     {"party_size": 50},                                                 # too large
     {"date": (date.today() - timedelta(days=1)).isoformat()},           # past
     {"date": (date.today() + timedelta(days=45)).isoformat()},          # too far ahead
@@ -68,6 +67,37 @@ def test_policy_violations_rejected(overrides):
 def test_weekend_afternoon_allowed():
     r = client.post("/reservations", json=booking(date=next_weekday(5).isoformat(), time="16:00"))
     assert r.status_code == 201
+
+
+def test_weekday_opening_hours_and_midnight_boundary():
+    weekday = next_weekday(2)  # Wednesday
+    for clock in ("11:00", "23:30"):
+        r = client.get("/reservations/availability",
+                       params={"date": weekday.isoformat(), "time": clock, "party_size": 2})
+        assert r.status_code == 200, clock
+
+    for day, clock in ((weekday, "10:00"), (weekday + timedelta(days=1), "00:00")):
+        r = client.get("/reservations/availability",
+                       params={"date": day.isoformat(), "time": clock, "party_size": 2})
+        assert r.status_code == 400, (day, clock)
+
+
+def test_weekend_opening_hours_and_overnight_boundaries():
+    saturday = next_weekday(5)
+    sunday = saturday + timedelta(days=1)
+    monday = sunday + timedelta(days=1)
+
+    for day, clock in ((saturday, "11:00"), (sunday, "00:00"), (sunday, "01:30"),
+                       (monday, "00:00"), (monday, "01:30")):
+        r = client.get("/reservations/availability",
+                       params={"date": day.isoformat(), "time": clock, "party_size": 2})
+        assert r.status_code == 200, (day, clock)
+
+    for day, clock in ((saturday, "00:00"), (saturday, "01:30"), (saturday, "10:30"),
+                       (sunday, "02:00"), (monday, "02:00")):
+        r = client.get("/reservations/availability",
+                       params={"date": day.isoformat(), "time": clock, "party_size": 2})
+        assert r.status_code == 400, (day, clock)
 
 
 def test_slot_fills_up():

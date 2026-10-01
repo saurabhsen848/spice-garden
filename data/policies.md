@@ -4,8 +4,9 @@
 Spice Garden is a family-friendly multi-cuisine Indian restaurant serving North Indian, South Indian and coastal dishes since 2012. We seat up to 80 guests across an indoor air-conditioned hall and an outdoor garden area.
 
 ## Opening Hours
-- Monday to Friday: 12:00 PM – 3:30 PM (lunch) and 7:00 PM – 11:00 PM (dinner)
-- Saturday and Sunday: 12:00 PM – 11:30 PM (open all day, no break)
+- Monday to Friday: 11:00 AM until 12:00 AM (midnight)
+- Saturday and Sunday: 11:00 AM until 2:00 AM the following calendar day
+- Weekend overnight hours continue after midnight: Saturday service runs until 2:00 AM Sunday, and Sunday service runs until 2:00 AM Monday. Friday service closes at midnight, so Friday-to-Saturday after-midnight hours are closed.
 - The kitchen takes last orders 30 minutes before closing.
 - We are closed on Diwali and Holi. On other public holidays we follow weekend timings.
 
@@ -23,7 +24,7 @@ Free valet parking is available for dine-in guests from 7:00 PM onwards. During 
 - Reservations can be made through this chat assistant, by phone, or at the front desk.
 - Reservations are accepted for parties of 1 to 10 guests. For groups larger than 10, please call us for a group or party booking.
 - Reservations can be made up to 30 days in advance.
-- Reservation slots are on the hour and half-hour during opening hours. The last reservation slot is 1 hour before closing.
+- Reservation slots are every 30 minutes during opening hours. The final slot is 30 minutes before closing. Early-morning reservation times belong to the previous day's overnight session when that session is open.
 - We hold a reserved table for 15 minutes past the booking time. After that the table may be released to walk-in guests.
 - Walk-ins are welcome, subject to availability.
 

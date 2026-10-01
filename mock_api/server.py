@@ -21,9 +21,10 @@ TABLES_PER_SLOT = 10
 MAX_PARTY_SIZE = 10
 MAX_DAYS_AHEAD = 30
 
-# (open, close) sessions per weekday; Mon=0 ... Sun=6. Must match data/policies.md.
-WEEKDAY_SESSIONS = [(time(12, 0), time(15, 30)), (time(19, 0), time(23, 0))]
-WEEKEND_SESSIONS = [(time(12, 0), time(23, 30))]
+# (open, close) sessions per opening day; close times earlier than open times are next-day closes.
+# Must match data/policies.md. Weekdays close at midnight; weekends close at 2 AM next day.
+WEEKDAY_SESSIONS = [(time(11, 0), time(0, 0))]
+WEEKEND_SESSIONS = [(time(11, 0), time(2, 0))]
 
 app = FastAPI(title="Spice Garden Mock API", version="1.0")
 
@@ -49,16 +50,20 @@ def _save_reservations(data: dict) -> None:
 
 
 def _valid_slots(day: date) -> list[time]:
-    """Reservation slots every 30 minutes, the last one 1 hour before closing."""
-    sessions = WEEKEND_SESSIONS if day.weekday() >= 5 else WEEKDAY_SESSIONS
+    """Return half-hour slots on this calendar day, including an open prior-day overnight session."""
     slots = []
-    for open_t, close_t in sessions:
-        current = datetime.combine(day, open_t)
-        last = datetime.combine(day, close_t) - timedelta(hours=1)
-        while current <= last:
-            slots.append(current.time())
-            current += timedelta(minutes=30)
-    return slots
+    for session_day in (day - timedelta(days=1), day):
+        sessions = WEEKEND_SESSIONS if session_day.weekday() >= 5 else WEEKDAY_SESSIONS
+        for open_t, close_t in sessions:
+            opens = datetime.combine(session_day, open_t)
+            close_day = session_day + timedelta(days=1) if close_t <= open_t else session_day
+            closes = datetime.combine(close_day, close_t)
+            current = opens
+            while current < closes:
+                if current.date() == day:
+                    slots.append(current.time())
+                current += timedelta(minutes=30)
+    return sorted(set(slots))
 
 
 def _validate_slot(day: date, slot: time, party_size: int) -> None:

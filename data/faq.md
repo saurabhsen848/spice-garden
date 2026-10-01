@@ -1,5 +1,14 @@
 # Spice Garden – Frequently Asked Questions
 
+## What are your opening hours?
+Spice Garden is open Monday to Friday from 11:00 AM until 12:00 AM (midnight). On Saturday and Sunday, we are open from 11:00 AM until 2:00 AM the following day. Saturday's overnight service continues until 2:00 AM Sunday, and Sunday's overnight service continues until 2:00 AM Monday. Friday closes at midnight.
+
+## When do you close?
+We close at 12:00 AM (midnight) Monday to Friday, and at 2:00 AM the following day on Saturday and Sunday. After-midnight hours on Sunday night continue into Monday until 2:00 AM.
+
+## Are you open on Sunday?
+Yes. Sunday hours are 11:00 AM to 2:00 AM Monday. The Saturday overnight session also remains open until 2:00 AM Sunday.
+
 ## Do you serve alcohol?
 No. Spice Garden is a non-alcoholic restaurant. We offer mocktails, lassis, fresh juices and traditional drinks instead.
 
@@ -16,7 +25,7 @@ Yes. Our garden area can be booked for private parties of 15 to 60 guests. Pleas
 Yes, free Wi-Fi is available for all dine-in guests. Please ask the staff for the password.
 
 ## Do you offer a buffet?
-We offer a weekday lunch buffet (Monday to Friday, 12:00 PM – 3:30 PM) at ₹499 per person, with 2 starters, 4 mains, breads, rice and 2 desserts. There is no buffet at dinner or on weekends.
+We offer a weekday lunch buffet at ₹499 per person, with 2 starters, 4 mains, breads, rice and 2 desserts. There is no buffet at dinner or on weekends.
 
 ## Are there any offers or discounts?
 - 10% off on the total bill for students with a valid college ID on weekdays.

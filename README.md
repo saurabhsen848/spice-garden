@@ -11,6 +11,8 @@ Customers can:
 - check table availability and make reservations through a mock reservation API
 - ask FAQs such as opening hours, location, parking, payment and cancellation policy
 
+Restaurant hours: Monday–Friday, 11:00 AM–12:00 AM (midnight); Saturday–Sunday, 11:00 AM–2:00 AM the following day. Saturday and Sunday overnight service continues into the next calendar day; Friday closes at midnight.
+
 ## Architecture
 
 ```
@@ -77,7 +79,7 @@ There is also a terminal chat: `python -m agent.agent`.
 ## Testing
 
 ```bash
-pytest tests                       # mock API unit tests (12 tests)
+pytest tests                       # mock API unit tests (13 tests)
 python -m tests.run_scenarios      # 10 end-to-end conversations against the real agent
 python -m tests.run_scenarios 5 7  # run selected scenarios only
 ```
