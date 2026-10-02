@@ -11,7 +11,7 @@ import streamlit as st
 
 from agent import config
 from agent.agent import build_agent, chat
-from agent.diagnostics import safe_exception_traceback
+from agent.diagnostics import safe_exception_message, safe_exception_traceback
 from agent.tools import backend_mode
 
 logger = logging.getLogger(__name__)
@@ -414,6 +414,7 @@ if prompt:
             with st.spinner("Preparing a thoughtful answer..."):
                 reply, tools, st.session_state.history = chat(get_agent(), st.session_state.history, prompt)
         except Exception as exc:
+            diagnostic = safe_exception_message(exc)
             logger.error(
                 "AI chat request failed (%s). Sanitized traceback follows:\n%s",
                 type(exc).__name__,
@@ -425,6 +426,8 @@ if prompt:
             )
             st.session_state.messages.pop()  # don't keep a failed turn in display history
             st.error("The assistant could not complete this request. Check the service connection and try again.", icon=":material/error:")
+            st.caption("DEBUG diagnostic (temporary; shown only after a failed AI request):")
+            st.code(f"AI diagnostic: {diagnostic}")
             st.markdown(reply)
         else:
             render_tool_steps(tools)

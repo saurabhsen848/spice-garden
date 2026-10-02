@@ -4,7 +4,7 @@ import pytest
 import requests
 
 from agent import config, tools
-from agent.diagnostics import safe_exception_traceback
+from agent.diagnostics import safe_exception_message, safe_exception_traceback
 from mock_api import services
 
 
@@ -52,21 +52,36 @@ def test_missing_gemini_key_error_is_safe(monkeypatch):
 def test_ai_diagnostic_redacts_configured_secrets_and_common_credentials(monkeypatch):
     google_key = "AIza" + "A" * 32
     streamlit_token = "streamlit-token-secret"
+    environment_secret = "environment-password-secret"
+    api_base_url = "https://api-user:api-password@example.test"
     monkeypatch.setattr(config, "GOOGLE_API_KEY", google_key)
+    monkeypatch.setattr(config, "API_BASE_URL", api_base_url)
     monkeypatch.setattr(config, "_streamlit_secrets", lambda: {
         "SERVICE": {"TOKEN": streamlit_token},
     })
+    monkeypatch.setenv("SERVICE_PASSWORD", environment_secret)
     try:
         raise RuntimeError(
             f"request failed with {google_key} and {streamlit_token}; "
-            "authorization Bearer bearer-secret and ?key=url-secret"
+            f"{environment_secret}; Authorization: Bearer bearer-secret; "
+            f"google_api_key=inline-secret; ?key=url-secret; backend={api_base_url}; "
+            "alternate=https://inline-user:inline-password@example.test"
         )
     except RuntimeError as exc:
+        diagnostic_message = safe_exception_message(exc)
         diagnostic = safe_exception_traceback(exc)
 
+    assert diagnostic_message.startswith("RuntimeError:")
+    assert "request failed" in diagnostic_message
+    assert "Authorization: [REDACTED]" in diagnostic_message
+    assert "google_api_key=[REDACTED]" in diagnostic_message
+    assert "?key=[REDACTED]" in diagnostic_message
+    assert "backend=[REDACTED]" in diagnostic_message
+    assert "alternate=https://[REDACTED]@example.test" in diagnostic_message
     assert "RuntimeError" in diagnostic
     assert "[REDACTED]" in diagnostic
-    for secret in (google_key, streamlit_token, "bearer-secret", "url-secret"):
+    for secret in (google_key, streamlit_token, environment_secret, "bearer-secret", "inline-secret", "url-secret", api_base_url, "inline-user", "inline-password"):
+        assert secret not in diagnostic_message
         assert secret not in diagnostic
 
 
