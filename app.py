@@ -5,12 +5,16 @@ Run: streamlit run app.py (start the mock API first: uvicorn mock_api.server:app
 
 import html
 import json
+import logging
 
 import streamlit as st
 
 from agent import config
 from agent.agent import build_agent, chat
+from agent.diagnostics import safe_exception_traceback
 from agent.tools import backend_mode
+
+logger = logging.getLogger(__name__)
 
 st.set_page_config(
     page_title="Spice Garden | AI Restaurant Assistant",
@@ -409,7 +413,12 @@ if prompt:
         try:
             with st.spinner("Preparing a thoughtful answer..."):
                 reply, tools, st.session_state.history = chat(get_agent(), st.session_state.history, prompt)
-        except Exception:
+        except Exception as exc:
+            logger.error(
+                "AI chat request failed (%s). Sanitized traceback follows:\n%s",
+                type(exc).__name__,
+                safe_exception_traceback(exc),
+            )
             reply, tools = (
                 "Sorry, I'm having trouble reaching my AI service right now. Please try again in a minute.",
                 [],

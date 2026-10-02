@@ -4,6 +4,7 @@ import pytest
 import requests
 
 from agent import config, tools
+from agent.diagnostics import safe_exception_traceback
 from mock_api import services
 
 
@@ -46,6 +47,27 @@ def test_missing_gemini_key_error_is_safe(monkeypatch):
     monkeypatch.setattr(config, "GOOGLE_API_KEY", None)
     with pytest.raises(RuntimeError, match="GOOGLE_API_KEY is not configured"):
         config.require_google_api_key()
+
+
+def test_ai_diagnostic_redacts_configured_secrets_and_common_credentials(monkeypatch):
+    google_key = "AIza" + "A" * 32
+    streamlit_token = "streamlit-token-secret"
+    monkeypatch.setattr(config, "GOOGLE_API_KEY", google_key)
+    monkeypatch.setattr(config, "_streamlit_secrets", lambda: {
+        "SERVICE": {"TOKEN": streamlit_token},
+    })
+    try:
+        raise RuntimeError(
+            f"request failed with {google_key} and {streamlit_token}; "
+            "authorization Bearer bearer-secret and ?key=url-secret"
+        )
+    except RuntimeError as exc:
+        diagnostic = safe_exception_traceback(exc)
+
+    assert "RuntimeError" in diagnostic
+    assert "[REDACTED]" in diagnostic
+    for secret in (google_key, streamlit_token, "bearer-secret", "url-secret"):
+        assert secret not in diagnostic
 
 
 def test_local_api_mode_is_preferred(monkeypatch):
